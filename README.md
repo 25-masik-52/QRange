@@ -7,7 +7,7 @@ A c++ library for working with numerical ranges.
 ![GitHub Repo stars](https://img.shields.io/github/stars/25-masik-52/QRange)
 
 ## Documentation
-User documentation can be obtained at [this link](/docs/html/index.html).
+User documentation can be obtained at [this link](https://25-masik-52.github.io/QRange/).
 
 ## Project pasport
 If you want to find out what this project is for, look at the [project passport](docs/QRangePasport.pdf).
