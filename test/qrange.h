@@ -1,3 +1,5 @@
+#pragma once
+
 #include <QtCore>
 
 enum QRangeDirection { Minus = -1, Zero = 0, Plus = 1 };
