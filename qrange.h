@@ -3,27 +3,29 @@
 #include <QtCore>
 
 /*!
- * \class QRangeDirection
+ * \enum QRangeDirection
  * \brief Enum defining the direction of the range.
- * 
- * - Minus (-1): The beginning of the range is greater than its end.
- * - Zero (0): The beginning and end of the range are equal.
- * - Plus (1): The beginning of the range is less than its end.
  */
-enum class QRangeDirection { Minus = -1, Zero = 0, Plus = 1 };
+enum class QRangeDirection
+{
+    Minus = -1, /*!< (-1) The beginning of the range is greater than its end. */
+    Zero = 0, /*!< (0) The beginning and end of the range are equal. */
+    Plus = 1 /*!< (1) The beginning of the range is less than its end. */
+};
 
 /*!
- * \class QRangeSensitivity
+ * \enum QRangeSensitivity
  * \brief Enum that determines the sensitivity of certain methods, such as contains().
- * 
- * If QRangeSensitivity::Sensitivity is set, the method will work with the operators '>' and '<'.
- * If QRangeSensitivity::Insensitive is set, the method will work with '>=' and '<='.
  */
-enum class QRangeSensitivity { Sensitive, Insensitive };
+enum class QRangeSensitivity
+{
+    Sensitive, /*!< If QRangeSensitivity::Sensitive is set, the method will work with the operators '>' and '<'. */
+    Insensitive /*!< If QRangeSensitivity::Insensitive is set, the method will work with '>=' and '<='. */
+};
 
 /*!
  * \class QRange
- * 
+ *
  * \author 25-masik-52
  * \copyright MIT License
  * \version 1.0.0
@@ -39,7 +41,7 @@ public:
      */
     QRange() = default;
     ~QRange() = default;
-    
+
     /*!
      * \brief QRange(T start, T end) - the constructor with 2 parameters.
      * \param start - the beginning of the range.
@@ -48,12 +50,12 @@ public:
     explicit QRange(T start, T end) : m_start { start }, m_end { end }
     {
         static_assert(is_normal_v, "[QRange::QRange] Typename T is partially or completely non-numeric!");
-        
+
         if (end - start > 0) m_direction = QRangeDirection::Plus;
         else if (end - start < 0) m_direction = QRangeDirection::Minus;
         else m_direction = QRangeDirection::Zero;
     }
-    
+
     /*!
      * \brief QRange(std::pair<T, T> start_end) - A constructor that
      * creates a range based on a pair of set values, where the first element of the pair
@@ -61,7 +63,7 @@ public:
      */
     explicit QRange(std::pair<T, T> start_end)
         : QRange{ start_end.first, start_end.second } {}
-    
+
     /*!
      * \brief QRange(QString start, QString end, uint8_t first_base, uint8_t second_base = 0) - A constructor that works with
      * different calculus systems where:
@@ -76,7 +78,7 @@ public:
      */
     explicit QRange(QString start, QString end, uint8_t first_base, uint8_t second_base = 0)
         : QRange{ normalizeValue(start, first_base), normalizeValue(end, second_base < 2 ? first_base : second_base) } {}
-    
+
     /*!
      * \brief QRange - A constructor that takes the beginning of the range in a defined calculus systems,
      * the calculus system itself and offset from the beginning.
@@ -87,7 +89,7 @@ public:
      */
     explicit QRange(QString start, T offset, uint8_t base)
         : QRange{ normalizeValue(start, base), normalizeValue(start, base) + offset } {}
-    
+
     /*!
      * \brief Gets the start of the range.
      * \return The beginning of the range.
@@ -129,7 +131,7 @@ public:
      * \see enum QRangeDirection.
      */
     QRangeDirection direction() const { return m_direction; }
-    
+
     /*!
      * \brief Gets the range in another base.
      * \param base The base for the calculus system of the beginning and end of the range.
@@ -140,7 +142,7 @@ public:
     {
         return { QString::number(m_start, base), QString::number(m_end, base) };
     }
-    
+
     /*!
      * \brief Sets the start of the range.
      * \param start The beginning of the range.
@@ -155,7 +157,7 @@ public:
      * \see enum QRangeDirection.
      */
     void setEnd(const T end) { *this = QRange{ m_start, end }; }
-    
+
     /*!
      * \brief Sets the direction of the range by swapping the start and end.
      * \param direction The QRangeDirection parameter.
@@ -168,23 +170,23 @@ public:
             qWarning() << "[QRange::setDirection] There is no way to change direction in zero length range!";
             return;
         }
-        
+
         if (static_cast<int>(direction) > 1 || static_cast<int>(direction) < -1) {
             qWarning() << "[QRange::setDirection] Invalid direction!";
             return;
         }
-        
+
         if (direction == 0 && m_start != m_end) {
             qWarning() << "[QRange::setDirection] There is no way to set direction to Zero in non-zero length range!";
             return;
         }
-        
+
         if (m_direction != direction)
             std::swap(m_start, m_end);
-        
+
         m_direction = direction;
     }
-    
+
     /*!
      * \see QRange::setDirection(const QRangeDirection& direction).
      * \see enum QRangeDirection.
@@ -207,7 +209,7 @@ public:
             break;
         }
     }
-    
+
     /*!
      * \brief This method changes the values of the start and end of the range relative to the x-axis.
      * \param direction The direction to reverse the range.
@@ -223,20 +225,20 @@ public:
     {
         if (direction == QRangeDirection::Zero)
             *this = QRange{ m_start * -1, m_end * -1 };
-        
+
         if (direction == QRangeDirection::Minus) {
             auto start = m_start > 0 ? m_start * -1 : m_start;
             auto end = m_end > 0 ? m_end * -1 : m_end;
             *this = QRange{ start, end };
         }
-        
+
         if (direction == QRangeDirection::Plus) {
             auto start = m_start < 0 ? m_start * -1 : m_start;
             auto end = m_end < 0 ? m_end * -1 : m_end;
             *this = QRange{ start, end };
         }
     }
-    
+
     /*!
      * \see QRange::reverse(const QRangeDirection& direction = QRangeDirection::Zero).
      * \see enum QRangeDirection.
@@ -259,7 +261,7 @@ public:
             break;
         }
     }
-    
+
     /*!
      * \brief isPositive property. Checks the beginning and end of the range relative to the x-axis.
      * \param sensitivity The sensitivity level for the check.
@@ -274,7 +276,7 @@ public:
             return m_start >= 0 && m_end >= 0;
         qFatal("[QRange::isPositive] An unexpected error!");
     }
-    
+
     /*!
      * \brief isNegative property. Checks the beginning and end of the range relative to the x-axis.
      * \param sensitivity The sensitivity level for the check.
@@ -289,7 +291,7 @@ public:
             return m_start <= 0 && m_end <= 0;
         qFatal("[QRange::isNegative] An unexpected error!");
     }
-    
+
     /*!
      * \brief isMixed property. Checks the beginning and end of the range relative to the x-axis.
      * \return True if start and end belong to different sets of positive and negative numbers; otherwise, returns false.
@@ -300,7 +302,7 @@ public:
      * \return True if both start and end equal 0; otherwise, returns false.
      */
     bool isZero() const { return m_start == 0 && m_end == 0; }
-    
+
     /*!
      * \brief This method checks whether a number is contained within the range.
      * \param number The number to check.
@@ -316,7 +318,7 @@ public:
             return lower() <= number && number <= upper();
         qFatal("[QRange::contains] An unexpected error!");
     }
-    
+
     /*!
      * \brief This method checks whether an external range is contained within the source range.
      * \param range The external range to check.
@@ -332,7 +334,7 @@ public:
             return lower() <= range.lower() && range.upper() <= upper();
         qFatal("[QRange::contains] An unexpected error!");
     }
-    
+
     /*!
      * \brief This method checks whether the source range is contained within the external range.
      * \param range The external range to check against.
@@ -348,7 +350,7 @@ public:
             return range.lower() <= lower() && upper() <= range.upper();
         qFatal("[QRange::in] An unexpected error!");
     }
-    
+
     /*!
      * \brief This method checks whether one range overlaps with another.
      * \param range The range to check for overlap.
@@ -360,7 +362,7 @@ public:
     {
         return contains(range.m_start, sensitivity) || contains(range.m_end, sensitivity) || range.contains(m_start, sensitivity) || range.contains(m_end, sensitivity);
     }
-    
+
     /*!
      * \brief This method finds the minimum length range from a set of ranges.
      * \param ranges
@@ -375,7 +377,7 @@ public:
             return r1.length() < r2.length();
         });
     }
-    
+
     /*!
      * \brief This method finds the maximum length range from a set of ranges.
      * \param ranges
@@ -390,7 +392,7 @@ public:
             return r1.length() > r2.length();
         });
     }
-    
+
     /*!
      * \brief This method finds the minimum range on the x-axis from a set of ranges.
      * \param ranges
@@ -405,7 +407,7 @@ public:
             return r1.lower() < r2.lower();
         });
     }
-    
+
     /*!
      * \brief This method finds the maximum range on the x-axis from a set of ranges.
      * \param ranges
@@ -420,7 +422,7 @@ public:
             return r1.upper() > r2.upper();
         });
     }
-    
+
     /*!
      * \brief This method finds the range that is closest to minus infinity on the x-axis.
      * \param ranges
@@ -440,7 +442,7 @@ public:
             return r1.middleAccurate() < r2.middleAccurate();
         });
     }
-    
+
     /*!
      * \brief This method finds the range that is closest to plus infinity on the x-axis.
      * \param ranges
@@ -460,7 +462,7 @@ public:
             return r1.middleAccurate() > r2.middleAccurate();
         });
     }
-    
+
     /*!
      * \brief Method converts all ranges in the list to a number list.
      * \param ranges
@@ -477,7 +479,7 @@ public:
         }
         return result;
     }
-    
+
     /*!
      * \brief Method converts a list of numbers to the list of ranges. If
      * there is an even number of elements, it will take each 2 numbers and create QRanges, where the first
@@ -497,13 +499,13 @@ public:
                 result.append(QRange{ first, first });
                 continue;
             }
-            
+
             auto second = editableNumbers.takeFirst();
             result.append(QRange{ first, second });
         }
         return result;
     }
-    
+
     /*!
      * \brief Method cuts the range into equal parts, the number of which is determined by \param number.
      * \param range
@@ -514,16 +516,16 @@ public:
     static QList<QRange> cut(const QRange& range, int number)
     {
         QList<QRange> result;
-        
+
         if (number == 0)
             return { range };
-        
+
         if (number < 0)
             qFatal("[QRange::cut] Incorrect number!");
-        
+
         if (number > range.length())
             qWarning() << "[QRange::cut] number > range.length(), so method can work strange";
-        
+
         T step = range.length() / number;
         step = range.direction() == QRangeDirection::Minus ? step * -1 : step;
         T currentStart = range.start();
@@ -533,10 +535,10 @@ public:
             result.emplace_back(QRange{ currentStart, currentEnd });
             currentStart = currentEnd;
         }
-        
+
         return result;
     }
-    
+
     /*!
      * \brief Method connects ranges from a QList to a single range.
      * \param ranges
@@ -561,53 +563,53 @@ public:
     {
         auto sortedRanges = ranges;
         QRange result;
-        
+
         if (sensitivity == QRangeSensitivity::Sensitive) {
             std::sort(sortedRanges.begin(), sortedRanges.end());
             result = sortedRanges.first();
-            
+
             for (const auto& range : sortedRanges) {
                 if (result == range)
                     continue;
-                
+
                 if (result.m_direction != range.m_direction
                     && result.m_direction != QRangeDirection::Zero
                     && range.m_direction != QRangeDirection::Zero)
                     qFatal("[QRange::combine] Ranges have different directions!");
-                
+
                 if (!result.contains(range.m_start, QRangeSensitivity::Insensitive))
                     qFatal("[QRange::combine] There is a gap between ranges!");
-                
+
                 result.setEnd(sortedRanges[sortedRanges.count() - 1].m_end);
             }
         } else if (sensitivity == QRangeSensitivity::Insensitive) {
             result = sortedRanges.first();
-            
+
             const auto numbers = QRange::brake(sortedRanges);
             const auto [min, max] = std::minmax_element(numbers.begin(), numbers.end());
             result = QRange{ *min, *max };
-            
+
             if (result.m_direction != QRangeDirection::Zero) {
                 int countDirectionNegative = 0;
                 int countDirectionPositive = 0;
-                
+
                 for (const QRange& range : sortedRanges) {
                     if (range.m_direction == QRangeDirection::Minus)
                         countDirectionNegative++;
                     else if (range.m_direction == QRangeDirection::Plus)
                         countDirectionPositive++;
                 }
-                
+
                 if (countDirectionNegative > countDirectionPositive)
                     result.setDirection(QRangeDirection::Minus);
                 else
                     result.setDirection(QRangeDirection::Plus);
             }
         }
-        
+
         return result;
     }
-    
+
     /*!
      * \brief Operators +, -, *, /, % perform the appropriate mathematical operations with
      * the start and the end of the range.
@@ -619,7 +621,7 @@ public:
     QRange operator*(T number) const { return QRange{ m_start * number, m_end * number }; }
     QRange operator/(T number) const { return QRange{ m_start / number, m_end / number }; }
     QRange operator%(T number) const { return QRange{ m_start % number, m_end % number }; }
-    
+
     /*!
      * \brief Operator + works the same way as the set union operator.
      * \param range
@@ -634,16 +636,16 @@ public:
             return { *this, *this };
         if (range.contains(*this))
             return { range, range };
-        
+
         auto min = std::min({ m_start, m_end, range.m_start, range.m_end });
         auto max = std::max({ m_start, m_end, range.m_start, range.m_end });
         auto res = QRange{ min, max };
         const auto direction = length() >= range.length()? m_direction : range.m_direction;
         res.setDirection(direction);
-        
+
         return { res, res };
     }
-    
+
     /*!
      * \brief Operator - works the same way as the set difference operator.
      * \param range
@@ -654,12 +656,12 @@ public:
     {
         if (!overlays(range, QRangeSensitivity::Insensitive) || range.isZero())
             return { *this, *this };
-        
+
         if (in(range)) {
             qWarning() << "[QRange::operator-] The subtracted is greater than the reduced";
             return range - *this;
         }
-        
+
         if (contains(range)) {
             auto resFirst = QRange{ lower(), range.lower() };
             auto resSecond = QRange{ range.upper(), upper() };
@@ -667,12 +669,12 @@ public:
             resSecond.setDirection(m_direction);
             return { resFirst, resSecond };
         }
-        
+
         if (lower() == range.lower() && upper() == range.upper()) {
             auto res = QRange{};
             return { res, res };
         }
-        
+
         const auto direction = length() >= range.length()? m_direction : range.m_direction;
         if (middleAccurate() > range.middleAccurate()) {
             auto res = QRange{ range.upper(), upper() };
@@ -683,10 +685,10 @@ public:
             res.setDirection(direction);
             return { res, res };
         }
-        
+
         qFatal("[QRange::operator-] An unexpected error!");
     }
-    
+
     /*!
      * \brief Operator * works the same way as the set intersection operator.
      * \param range
@@ -697,7 +699,7 @@ public:
     {
         if (isZero() || range.isZero() || !overlays(range, QRangeSensitivity::Insensitive))
             qFatal("[QRange::operator*] The result is ∅!");
-        
+
         if (contains(range, QRangeSensitivity::Insensitive))
             return range;
         if (range.contains(*this, QRangeSensitivity::Insensitive))
@@ -712,12 +714,12 @@ public:
                 auto direction = m_direction * range.m_direction;
                 res.setDirection(direction);
             }
-            
+
             return res;
         }
         qFatal("[QRange::operator*] An unexpected error!");
     }
-    
+
     /*!
      * \brief Operator / works the same way as the set complement operator.
      * \param range
@@ -732,7 +734,7 @@ public:
             || contains(range)
             || (lower() == range.lower() && upper() == range.upper()))
             return *this - range;
-        
+
         const auto direction = m_direction * range.m_direction;;
         if (middleAccurate() > range.middleAccurate()) {
             auto resFirst = QRange{ range.lower(), lower() };
@@ -747,10 +749,10 @@ public:
             resSecond.setDirection(direction);
             return { resFirst, resSecond };
         }
-        
+
         qFatal("[QRange::operator/] An unexpected error!");
     }
-    
+
     /*!
      * \brief Operators >, <.
      * \param range
@@ -759,7 +761,7 @@ public:
      */
     bool operator>(const QRange& range) const { return maxMidX(range, *this) == *this; }
     bool operator<(const QRange& range) const { return minMidX(range, *this) == *this; }
-    
+
     /*!
      * \brief Operators ==, !=.
      * \param range
@@ -774,7 +776,7 @@ public:
     {
         return m_start != range.m_start || m_end != range.m_end || m_direction != range.m_direction;
     }
-    
+
     /*!
      * \brief Operators >=, <=.
      * \param range
@@ -783,22 +785,22 @@ public:
      */
     bool operator>=(const QRange& range) const { return *this > range || *this == range; }
     bool operator<=(const QRange& range) const { return *this < range || *this == range; }
-    
+
     friend std::ostream& operator<<(std::ostream &os, const QRange& range)
     {
         return os << range.getRangeInfo().toStdString();
     }
-    
+
     friend QDebug operator<<(QDebug dbg, const QRange& range)
     {
         return dbg << range.getRangeInfo();
     }
-    
+
 protected:
     T m_start{ 0 };
     T m_end{ 0 };
     QRangeDirection m_direction{ Zero };
-    
+
     /*!
      * \brief The library works with certain types of numeric data described below:
      * - int
@@ -825,7 +827,7 @@ protected:
                                     || std::is_same<T, float>::value
                                     || std::is_same<T, double>::value
                                     || std::is_same<T, long double>::value;
-    
+
     /*!
      * \brief QRange also has several functions with a variable number of parameters.
      * These functions use the alias ArgsType.
@@ -839,12 +841,12 @@ protected:
                                   QList<QRange>,
                                   std::list<QRange>,
                                   std::vector<QRange>>;
-    
+
 private:
     T normalizeValue(const QString& value, uint8_t base)
     {
         bool ok = false;
-        
+
         if constexpr (std::is_integral<T>::value)
         {
             if (std::is_same_v<T, int>)
@@ -875,13 +877,13 @@ private:
                 return 0.0;
             }
         }
-        
+
         if (!ok) {
             qCritical() << QString{ "[QRange::normalizeValue] Failed to convert string: %1!" }.arg(value);
             return 0;
         }
     }
-    
+
     template <typename... Args>
     static QList<QRange> unpackRanges(const Args&... args)
     {
@@ -891,7 +893,7 @@ private:
             unpackRange(ranges, arg);
         return ranges;
     }
-    
+
     static void unpackRange(QList<QRange>& allRanges, const ArgsType& arg)
     {
         std::visit([&](const auto& v) {
@@ -908,7 +910,7 @@ private:
                 qWarning() << "[QRange::unpackRanges] Unexpected variant type";
         }, arg);
     }
-    
+
     template <typename Comparator>
     static QRange compareRanges(const QList<QRange>& ranges, Comparator cmp)
     {
@@ -916,16 +918,16 @@ private:
             qWarning() << "[QRange::compareRanges] There is nothing to compare";
             return QRange{};
         }
-        
+
         auto result = ranges.first();
-        
+
         for (const auto& currentRange : ranges)
             if (cmp(currentRange, result))
                 result = currentRange;
-        
+
         return result;
     }
-    
+
     QString getRangeInfo() const
     {
         QString direction{"error"};
